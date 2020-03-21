@@ -14,8 +14,8 @@ Author: OddAbo
 
 A simple example shows how you can allocate memory to array depending on input
 arguments.
-```c
-./GetArg natom 1024 nstep 1 dt 0.001
+```shellscript
+./GetArg  natom 1024  nstep 1  dt 0.001
 ```
 ---
 
