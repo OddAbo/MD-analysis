@@ -4,6 +4,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -12,7 +13,7 @@ int main(int argc, char* argv[])
   double* xyz;
   int natom, nstep;
   double dt;
-
+  
   for (int i = 1; i < argc; i += 2)
   {
     if (strcmp(argv[i], "natom") == 0) {
