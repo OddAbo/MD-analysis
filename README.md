@@ -1,10 +1,11 @@
+
 # Codes for analyzing Molecular Dynamics program results
 
 2020-03-21
 
 Author: OddAbo
 
-> See [**reference**](https://github.com/OddAbo/MD-analysis/tree/master/reference) for computing details
+> See [**reference**](https://github.com/OddAbo/MD-analysis/tree/master/reference) for more computing details
 
 ---
 
