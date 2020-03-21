@@ -1,6 +1,6 @@
 /* 2020-03-19
  * by dianmo
- * This is a simple example of allocating memory for pointer to array.
+ * This is a simple example of allocating memory for pointer to array
  */
 
 #include <stdio.h>
@@ -20,9 +20,19 @@ int main(int argc, char* argv[])
     } else if (strcmp(argv[i], "nstep") == 0) {
       nstep = atoi(argv[i + 1]);
     } else if (strcmp(argv[i], "pbc") == 0) {
-      pbc_box = atof(argv[i + 1]);
-      ipbc = 1;
+      dt = atof(argv[i + 1]);
     }
   }
-  return;
+
+  /* Allocate memory */
+  xyz = (double *)malloc(3 * natom * sizeof(double));
+
+  /* Then you can use 'xyz' as an array */
+  xyz[0] = 3.1415926;
+  xyz[1] = 2.7182818;
+  xyz[2] = 42;
+
+  free(xyz);
+
+  return 0;
 }
