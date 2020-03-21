@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
       natom = atoi(argv[i + 1]);
     } else if (strcmp(argv[i], "nstep") == 0) {
       nstep = atoi(argv[i + 1]);
-    } else if (strcmp(argv[i], "pbc") == 0) {
+    } else if (strcmp(argv[i], "dt") == 0) {
       dt = atof(argv[i + 1]);
     }
   }
