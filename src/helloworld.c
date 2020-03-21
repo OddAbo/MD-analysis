@@ -1,6 +1,6 @@
 /* 2020-03-14
  * author: dianmo
- * Says hello to this world
+ * Says hello to this world :)
  */
 
 #include <stdio.h>
