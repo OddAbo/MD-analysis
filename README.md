@@ -10,6 +10,11 @@ Author: OddAbo
 
 ---
 
+## [**getarg.c**](https://github.com/OddAbo/MD-analysis/blob/master/src/getarg.c)
+
+A simple example shows how you can allocate memory to array depending on input
+arguments.
+
 ## [**readxyz.c**](https://github.com/OddAbo/MD-analysis/blob/master/src/readxyz.c)
 
 A simple example shows how you can read binary file formed by Fortran (access =
