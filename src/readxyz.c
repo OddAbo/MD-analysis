@@ -9,7 +9,7 @@
 
 int main()
 {
-  /* Size of array is settled when define for convinience, but I'd recommend:
+  /* In this code, size of array is settled when declared, but I'd recommend:
    * define pointers to arrays first,
    * then allocate memory for arrays depending on input arguments.
    */
