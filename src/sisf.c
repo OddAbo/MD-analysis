@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
   free(xyz);
   free(xyznew);
 
-#pragma omp paralell for
+#pragma omp paralell for schedule(guided)
   for (iFs = 0; iFs < nFs; ++iFs)
   {
     *(Fs + iFs) /= nstart;
