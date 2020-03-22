@@ -10,7 +10,7 @@
 
 int main(int argc, char* argv[])
 {
-  double* xyz;
+  double *xyz;
   int natom, nstep;
   double dt;
   
