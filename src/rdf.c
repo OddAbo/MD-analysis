@@ -38,9 +38,8 @@ int main(int argc, char *argv[])
   if ((fp = fopen("md.out","rb")) == 0)
   {
     printf("Error: file 'md.out' does not exist!\n");
-    return 0;
+    exit(1);
   }
-
   xyz = (double *)malloc(sizeof(double) * 3 * natom);
   dbox = (float)gbox / nbox;
   box2 = gbox * gbox / scale;
