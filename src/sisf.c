@@ -103,6 +103,7 @@ int main(int argc, char* argv[])
   free(xyz);
   free(xyznew);
 
+  /* Normalizes and outputs */
 #pragma omp paralell for schedule(guided)
   for (iFs = 0; iFs < nFs; ++iFs)
   {
