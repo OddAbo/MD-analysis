@@ -67,12 +67,15 @@ int main(int argc, char *argv[])
 
         /* Periodic boundary condition */
         if (ipbc) {
-          if (dx > 0.5) dx = (dx - 1) * pbc_x;
-          else if (dx < -0.5) dx = (dx + 1) * pbc_x;
-          if (dy > 0.5) dy = (dy - 1) * pbc_y;
-          else if (dy < -0.5) dy = (dy + 1) * pbc_y;
-          if (dz > 0.5) dz = (dz - 1) * pbc_z;
-          else if (dz < -0.5) dz = (dz + 1) * pbc_z; 
+          if (dx > 0.5) --dx;
+          else if (dx < -0.5) ++dx;
+          if (dy > 0.5) --dy;
+          else if (dy < -0.5) ++dy;
+          if (dz > 0.5) --dz;
+          else if (dz < -0.5) ++dz;
+          dx *= pbc_x;
+          dy *= pbc_y;
+          dz *= pbc_z;
         }
         dr = dx * dx + dy * dy + dz * dz;
       }
