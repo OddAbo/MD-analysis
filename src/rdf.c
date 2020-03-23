@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     /* Calculate distance */
     omp_set_num_threads(nthreads);
 #pragma omp parallel for schedule(guided) \
-    private(j, dx, dy, dz, dr, ibox) firstprivate(dbox, ipbc, pbc_x, pbc_y, pbc_z)
+        private(j, dx, dy, dz, dr, ibox) firstprivate(dbox, ipbc, pbc_x, pbc_y, pbc_z)
     for (i = 0; i < natom - 1; ++i)
     {
       for (j = i + 1; j < natom; ++j)
