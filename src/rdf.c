@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 {
   FILE *fp;
   double *xyz, gr[nbin] = {0};
-  int nthreads = 4, nstep = 1, natom = 43, ipbc = 0, ibox, istep, i, j;
+  int nthread = 4, nstep = 1, natom = 43, ipbc = 0, ibox, istep, i, j;
   double dbox, pbc_x = 1, pbc_y = 1, pbc_z = 1;
   double rcut2 = rcut * rcut, dx, dy, dz, dr, rho = 1;
 
@@ -34,8 +34,8 @@ int main(int argc, char *argv[])
       pbc_y = pbc_x;
       pbc_z = pbc_x;
       rho = natom / (pbc_x * pbc_y * pbc_z); 
-    } else if (strcmp(argv[i], "nthreads") == 0) {
-      nthreads = atoi(argv[i + 1]);
+    } else if (strcmp(argv[i], "nthread") == 0) {
+      nthread = atoi(argv[i + 1]);
     }
   }
 
@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 
   xyz = (double *)malloc(sizeof(double) * 3 * natom);
   dbox = (float)rcut / nbin;
+  omp_set_num_threads(nthread);
 
   for (istep = 0; istep < nstep; ++istep)
   {
@@ -54,7 +55,6 @@ int main(int argc, char *argv[])
     fread(xyz, sizeof(double), 3 * natom, fp);
 
     /* Calculate distance */
-    omp_set_num_threads(nthreads);
 #pragma omp parallel for schedule(guided) \
         private(j, dx, dy, dz, dr, ibox) firstprivate(dbox, ipbc, pbc_x, pbc_y, pbc_z)
     for (i = 0; i < natom - 1; ++i)
