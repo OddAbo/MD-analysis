@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
     fread(xyz, sizeof(double), 3 * natom, fp);
 
     /* Calculate max displacement */
-#pragma omp parallel for schedule(guided) \
+#pragma omp parallel for schedule(dynamic) \
         private(ithread, dx, dy, dz, dr) \
         firstprivate(pbc_x, pbc_y, pbc_z, natom)
     for (i = 0; i < natom; ++i)
@@ -102,6 +102,9 @@ int main(int argc, char *argv[])
         dz *= pbc_z;
       }
       dr = sqrt(dx * dx + dy * dy + dz * dz);
+      /* To increase the speed, every thread has its own 'max displacement'
+       * "The" max displacement will be determined after parallel part
+       */
       *(dr_max + ithread) = (dr > *(dr_max + ithread)) ? \
                              dr : *(dr_max + ithread);
     }
@@ -113,14 +116,14 @@ int main(int argc, char *argv[])
     }
     sum_dr += *dr_max;
 
-    /* Set neighbor list */
+    /* Neighbor-list algorithm is used in this code */
     if (sum_dr > 0.5 * rlistshell) 
     {
-      /* Reset sum of maximum diplacement, neighbor list */
+      /* Reset sum of maximum diplacement and neighbor-list */
       sum_dr = 0;
       memset(list, 0, sizeof(int) * list_max * natom);
 
-#pragma omp parallel for schedule(guided) \
+#pragma omp parallel for schedule(dynamic) \
         private(j, dx, dy, dz, dr, ilist) \
         firstprivate(natom, ipbc, pbc_x, pbc_y, pbc_z, rlistshell2)
       for (i = 0; i < natom - 1; ++i)
@@ -146,7 +149,7 @@ int main(int argc, char *argv[])
           dr = dx * dx + dy * dy + dz * dz;
           if (dr > rlistshell2) continue;
 
-          /* Store index of atom, store total numbe of index in list[i][0] */ 
+          /* Store atom index in list[i][], store total numbe of index in list[i][0] */ 
           *(list + i * list_max + ilist) = j;
           ++ilist;
         }
@@ -155,7 +158,7 @@ int main(int argc, char *argv[])
     }
 
     /* Calculate distance */
-#pragma omp parallel for schedule(guided) \
+#pragma omp parallel for schedule(dynamic) \
         private(ithread, ilist, j, dx, dy, dz, dr, ibin) \
         firstprivate(dbox, ipbc, pbc_x, pbc_y, pbc_z)
     for (i = 0; i < natom - 1; ++i)
@@ -183,13 +186,17 @@ int main(int argc, char *argv[])
         if (dr > rcut2) continue;
         dr = sqrt(dr);
         ibin = (int)(dr / dbox);
+
+        /* To increase the speed, every thread has its own g(r)
+         * After parallel part, g(r) will be summed
+         */
         ++ *(gr + ithread * nbin + ibin);
       }
     }
   }
 
   /* Sum g(r) */
-#pragma omp parallel for schedule(guided) \
+#pragma omp parallel for schedule(dynamic) \
         private(ithread)
   for (ibin = 0; ibin < nbin; ++ibin)
   {
