@@ -15,6 +15,14 @@
 #define vshell 4 * M_PI * (pow((i + 1) * dbox, 3) - pow(i * dbox, 3)) / 3.
 #define rlistshell 0.3 * rcut
 
+#define WrapPBC if (dx > 0.5) --dx; \
+                else if (dx < -0.5) ++dx; \
+                if (dy > 0.5) --dy; \
+                else if (dy < -0.5) ++dy; \
+                if (dz > 0.5) --dz; \
+                else if (dz < -0.5) ++dz; \
+                dx *= pbc_x, dy *= pbc_y, dz *= pbc_z;
+
 int natom, ilist, ipbc = 0, nthread = 4, \
     nstep, ibin, istep, ifresh, ithread, i, j;
 double dr, sum_dr = 0, dbox = (double)rcut / nbin, \
@@ -89,17 +97,9 @@ int main(int argc, char *argv[])
       dx = *(xyz + 3 * i) - *(xyz_old + 3 * i);
       dy = *(xyz + 3 * i + 1) - *(xyz_old + 3 * i + 1);
       dz = *(xyz + 3 * i + 2) - *(xyz_old + 3 * i + 2);
-      if (ipbc)
+      if (ipbc) 
       {
-        if (dx > 0.5) --dx;
-        else if (dx < -0.5) ++dx;
-        if (dy > 0.5) --dy;
-        else if (dy < -0.5) ++dy;
-        if (dz > 0.5) --dz;
-        else if (dz < -0.5) ++dz;
-        dx *= pbc_x;
-        dy *= pbc_y;
-        dz *= pbc_z;
+        WrapPBC;
       }
       dr = sqrt(dx * dx + dy * dy + dz * dz);
       /* To increase the speed, every thread has its own 'max displacement'
@@ -136,15 +136,7 @@ int main(int argc, char *argv[])
           dz = *(xyz + 3 * i + 2) - *(xyz + 3 * j + 2);
           if (ipbc)
           {
-            if (dx > 0.5) --dx;
-            else if (dx < -0.5) ++dx;
-            if (dy > 0.5) --dy;
-            else if (dy < -0.5) ++dy;
-            if (dz > 0.5) --dz;
-            else if (dz < -0.5) ++dz;
-            dx *= pbc_x;
-            dy *= pbc_y;
-            dz *= pbc_z;
+            WrapPBC;
           }
           dr = dx * dx + dy * dy + dz * dz;
           if (dr > rlistshell2) continue;
@@ -172,15 +164,7 @@ int main(int argc, char *argv[])
         dz = *(xyz + 3 * i + 2) - *(xyz + 3 * j + 2);
         if (ipbc)
         {
-          if (dx > 0.5) --dx;
-          else if (dx < -0.5) ++dx;
-          if (dy > 0.5) --dy;
-          else if (dy < -0.5) ++dy;
-          if (dz > 0.5) --dz;
-          else if (dz < -0.5) ++dz;
-          dx *= pbc_x;
-          dy *= pbc_y;
-          dz *= pbc_z;
+          WrapPBC;
         }
         dr = dx * dx + dy * dy + dz * dz;
         if (dr > rcut2) continue;
