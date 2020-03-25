@@ -186,7 +186,6 @@ int main(int argc, char *argv[])
         if (dr > rcut2) continue;
         dr = sqrt(dr);
         ibin = (int)(dr / dbox);
-
         /* To increase the speed, every thread has its own g(r)
          * After parallel part, g(r) will be summed
          */
