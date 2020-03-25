@@ -3,13 +3,11 @@
  * Self-intermediate scattering funtion Fs(q, t)
  * Sets several start points, calculates Fs until it reduces to zero
  * Run with command:
- * ./SISF  natom 1024  nstep 500000  dt 0.001  nstart 1000 \
+ * ./SISF  natom 1024  nstep 5000000  dt 0.001  nstart 1000 \
  *         pbc 16.20  qmax 2.327
  */
 
-#ifdef _OPENMP
 #include <omp.h>
-#endif
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -21,8 +19,7 @@ int main(int argc, char* argv[])
   FILE *fp;
   double *xyz, *xyznew, *Fs;
   double dt, dx, dy, dz, dr, qmax, Fs_tmp, pbc_x, pbc_y, pbc_z;
-  int natom, nstep, nstart;
-  int ipbc, istart, iatom, nFs, iFs;
+  int natom, nstep, nstart, ipbc, istart, iatom, nFs, nFs_max, iFs;
 
   /* Checks input arguments */
   for (int i = 1; i < argc; i += 2)
@@ -58,17 +55,19 @@ int main(int argc, char* argv[])
     exit(1);
   }
   
-  fpos = (fpos_t *)malloc(nstart * sizeof(fpos_t));
-  xyz = (double *)malloc(3 * natom * sizeof(double));
-  xyznew = (double *)malloc(3 * natom * sizeof(double));
-  Fs = (double *)malloc(nFs * sizeof(double));
+  /* Initialize array */
+  Fs = (double *)malloc(sizeof(double) * nFs);
+  fpos = (fpos_t *)malloc(sizeof(fpos_t) * nstart);
+  xyz = (double *)malloc(sizeof(double) * 3 * natom);
+  xyznew = (double *)malloc(sizeof(double) * 3 * natom);
+  memset(Fs, 0, sizeof(double) * nFs);
 
   /* Initialization of file pointer postion:
    * Sets start postion, initializes corresponding pointer position
    */
   for (istart = 0; istart < nstart; ++istart)
   {
-    fgetpos(fp, (fpos + istart));
+    fgetpos(fp, fpos);
     fseek(fp, (long)sizeof(xyz) * nstep / nstart, SEEK_CUR);
   }
 
@@ -76,16 +75,16 @@ int main(int argc, char* argv[])
   for (istart = 0; istart < nstart; ++istart)
   {
     fsetpos(fp, (fpos + istart));
-    fread(xyz, sizeof(xyz), 1, fp);
-    for (iFs = 0; iFs < nFs; ++iFs)
+    fread(xyz, sizeof(double), 3 * natom, fp);
+    for (iFs = 1; iFs < nFs; ++iFs)
     {
-      fread(xyznew, sizeof(xyz), 1, fp);
-      Fs_tmp = 0;
+      fread(xyznew, sizeof(double), 3 * natom, fp);
 
-#pragma omp parallel for schedule(guided) \
-        reduction(Fs_tmp) private(dx, dy, dz, dr)
+#pragma omp parallel for schedule(dynamic) \
+        reduction(+:Fs_tmp) private(dx, dy, dz, dr)
       for (iatom = 0; iatom < natom; ++iatom)
       {
+        Fs_tmp = 0;
         dx = *(xyz + 3 * iatom) - *(xyznew + 3 * iatom);
         dy = *(xyz + 3 * iatom + 1) - *(xyznew + 3 * iatom + 1);
         dz = *(xyz + 3 * iatom + 2) - *(xyznew + 3 * iatom + 2);
@@ -106,14 +105,16 @@ int main(int argc, char* argv[])
       }
 
       *(Fs + iFs) += Fs_tmp;
-      if (Fs_tmp < 0.001) break;
+      if (Fs_tmp < 0.001) {
+        nFs_max = (nFs_max > nFs) ? nFs_max : nFs;
+        break;
+      }
     }
   }
 
   fclose(fp);
   free(xyz);
   free(xyznew);
-  free(fpos);
 
   /* Normalizes and outputs */
 #pragma omp paralell for schedule(guided)
