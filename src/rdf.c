@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
       pbc_x = atof(argv[i + 1]);
       pbc_y = pbc_x;
       pbc_z = pbc_x;
-      rho = natom / (pbc_x * pbc_y * pbc_z); 
+      rho = natom / (pbc_x * pbc_y * pbc_z);
     } else if (strcmp(argv[i], "nthread") == 0) {
       nthread = atoi(argv[i + 1]);
     }
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     sum_dr += *dr_max;
 
     /* Neighbor-list algorithm is used in this code */
-    if (sum_dr > 0.5 * rlistshell) 
+    if (sum_dr > 0.5 * rlistshell)
     {
       /* Reset sum of max diplacement and neighbor-list */
       sum_dr = 0;
