@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
    */
   for (istart = 0; istart < nstart; ++istart)
   {
-    fgetpos(fp, fpos);
+    fgetpos(fp, (fpos + istart));
     fseek(fp, (long)sizeof(xyz) * nstep / nstart, SEEK_CUR);
   }
 
