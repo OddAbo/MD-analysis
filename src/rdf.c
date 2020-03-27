@@ -15,13 +15,14 @@
 #define vshell 4 * M_PI * (pow((i + 1) * dbox, 3) - pow(i * dbox, 3)) / 3.
 #define rlistshell 0.3 * rcut
 
-#define WrapPBC if (dx > 0.5) --dx; \
-                else if (dx < -0.5) ++dx; \
-                if (dy > 0.5) --dy; \
-                else if (dy < -0.5) ++dy; \
-                if (dz > 0.5) --dz; \
-                else if (dz < -0.5) ++dz; \
-                dx *= pbc_x, dy *= pbc_y, dz *= pbc_z;
+#define WrapPBC             \
+{ if (dx >= 0.5) --dx;      \
+  else if (dx < -0.5) ++dx; \
+  if (dy >= 0.5) --dy;      \
+  else if (dy < -0.5) ++dy; \
+  if (dz >= 0.5) --dz;      \
+  else if (dz < -0.5) ++dz; \
+  dx *= pbc_x, dy *= pbc_y, dz *= pbc_z; }
 
 int natom, ilist, ipbc = 0, nthread = 4, \
     nstep, ibin, istep, ifresh, ithread, i, j;
@@ -86,25 +87,21 @@ int main(int argc, char *argv[])
     memset(dr_max, 0, sizeof(double) * (nthread + 1));
     fread(xyz, sizeof(double), 3 * natom, fp);
 
-    /* Calculate max displacement */
+    /* Calculate max displacement
+     * To increase the speed, every thread has its own 'max displacement'
+     * "The" max displacement will be determined after parallel part
+     */
 #pragma omp parallel for schedule(dynamic) \
         private(ithread, dx, dy, dz, dr) \
         firstprivate(pbc_x, pbc_y, pbc_z, natom)
     for (i = 0; i < natom; ++i)
     {
       ithread = omp_get_thread_num();
-
       dx = *(xyz + 3 * i) - *(xyz_old + 3 * i);
       dy = *(xyz + 3 * i + 1) - *(xyz_old + 3 * i + 1);
       dz = *(xyz + 3 * i + 2) - *(xyz_old + 3 * i + 2);
-      if (ipbc) 
-      {
-        WrapPBC;
-      }
+      if (ipbc) WrapPBC;
       dr = sqrt(dx * dx + dy * dy + dz * dz);
-      /* To increase the speed, every thread has its own 'max displacement'
-       * "The" max displacement will be determined after parallel part
-       */
       *(dr_max + ithread) = (dr > *(dr_max + ithread)) ? \
                              dr : *(dr_max + ithread);
     }
@@ -119,7 +116,7 @@ int main(int argc, char *argv[])
     /* Neighbor-list algorithm is used in this code */
     if (sum_dr > 0.5 * rlistshell) 
     {
-      /* Reset sum of maximum diplacement and neighbor-list */
+      /* Reset sum of max diplacement and neighbor-list */
       sum_dr = 0;
       memset(list, 0, sizeof(int) * list_max * natom);
 
@@ -134,17 +131,15 @@ int main(int argc, char *argv[])
           dx = *(xyz + 3 * i) - *(xyz + 3 * j);
           dy = *(xyz + 3 * i + 1) - *(xyz + 3 * j + 1);
           dz = *(xyz + 3 * i + 2) - *(xyz + 3 * j + 2);
-          if (ipbc)
-          {
-            WrapPBC;
-          }
+          if (ipbc) WrapPBC;
           dr = dx * dx + dy * dy + dz * dz;
           if (dr > rlistshell2) continue;
-
-          /* Store atom index in list[i][], store total numbe of index in list[i][0] */ 
           *(list + i * list_max + ilist) = j;
           ++ilist;
         }
+        /* Total number of list
+         * To be aware: index 'ilist' starts from list[i][1]
+         */
         *(list + i * list_max) = ilist;
       }
     }
@@ -162,10 +157,7 @@ int main(int argc, char *argv[])
         dx = *(xyz + 3 * i) - *(xyz + 3 * j);
         dy = *(xyz + 3 * i + 1) - *(xyz + 3 * j + 1);
         dz = *(xyz + 3 * i + 2) - *(xyz + 3 * j + 2);
-        if (ipbc)
-        {
-          WrapPBC;
-        }
+        if (ipbc) WrapPBC;
         dr = dx * dx + dy * dy + dz * dz;
         if (dr > rcut2) continue;
         dr = sqrt(dr);
