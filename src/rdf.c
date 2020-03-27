@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
   for (i = 0; i < nbin; ++i)
   {
     *(gr + i) /= 0.5 * natom * vshell * nstep * rho;
-    fprintf(fp,"%-.3f   %-.6f\n", (i + 0.5) * dbox, *(gr + i));
+    fprintf(fp,"%-5.3f   %-10.6f\n", (i + 0.5) * dbox, *(gr + i));
   }
   fclose(fp);
 
