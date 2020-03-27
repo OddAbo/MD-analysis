@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
       *(gr + ibin) += *(gr + ithread * nbin + ibin);
     }
   }
-
+  free(dr_max);
   free(xyz);
   free(xyz_old);
   free(list);
