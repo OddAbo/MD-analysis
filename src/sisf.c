@@ -79,12 +79,12 @@ int main(int argc, char* argv[])
     for (iFs = 1; iFs < nFs; ++iFs)
     {
       fread(xyznew, sizeof(double), 3 * natom, fp);
+      Fs_tmp = 0;
 
 #pragma omp parallel for schedule(dynamic) \
         reduction(+:Fs_tmp) private(dx, dy, dz, dr)
       for (iatom = 0; iatom < natom; ++iatom)
       {
-        Fs_tmp = 0;
         dx = *(xyz + 3 * iatom) - *(xyznew + 3 * iatom);
         dy = *(xyz + 3 * iatom + 1) - *(xyznew + 3 * iatom + 1);
         dz = *(xyz + 3 * iatom + 2) - *(xyznew + 3 * iatom + 2);
@@ -122,6 +122,7 @@ int main(int argc, char* argv[])
   {
     *(Fs + iFs) /= nstart;
   }
+  *Fs = 1;
 
   fp = fopen("sisf.dat","w");
   for (iFs = 0; iFs < nFs; ++iFs)
